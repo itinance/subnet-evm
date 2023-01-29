@@ -27,6 +27,7 @@ package precompile
 
 import (
 	"encoding/json"
+	"errors"
 	"math/big"
 	"strings"
 
@@ -198,17 +199,27 @@ func setGreeting(accessibleState PrecompileAccessibleState, caller common.Addres
 	if readOnly {
 		return nil, remainingGas, vmerrs.ErrWriteProtection
 	}
-	// attempts to unpack [input] into the arguments to the SetGreetingInput.
+	// Attempts to unpack [input] into the arguments to the SetGreetingInput.
 	// Assumes that [input] does not include selector
 	// You can use unpacked [inputStruct] variable in your code
-	inputStruct, err := UnpackSetGreetingInput(input)
+	inputStr, err := UnpackSetGreetingInput(input)
 	if err != nil {
 		return nil, remainingGas, err
 	}
 
 	// CUSTOM CODE STARTS HERE
-	_ = inputStruct // CUSTOM CODE OPERATES ON INPUT
-	// this function does not return an output, leave this one as is
+	// Check if the input string is longer than 32 bytes
+	if len(inputStr) > 32 {
+		return nil, 0, errors.New("input string is longer than 32 bytes")
+	}
+
+	// setGreeting is the execution function
+	// "SetGreeting(name string)" and sets the storageKey
+	// in the string returned by hello world
+	res := common.LeftPadBytes([]byte(inputStr), common.HashLength)
+	accessibleState.GetStateDB().SetState(HelloWorldAddress, common.BytesToHash([]byte("storageKey")), common.BytesToHash(res))
+
+	// This function does not return an output, leave this one as is
 	packedOutput := []byte{}
 
 	// Return the packed output and the remaining gas
