@@ -24,7 +24,7 @@ const (
 	feeManagerKey
 	rewardManagerKey
 	// ADD YOUR PRECOMPILE HERE
-	// {yourPrecompile}Key
+	helloWorldKey
 )
 
 // TODO: Move this to the interface or PrecompileConfig struct
@@ -50,7 +50,7 @@ func (k precompileKey) String() string {
 }
 
 // ADD YOUR PRECOMPILE HERE
-var precompileKeys = []precompileKey{contractDeployerAllowListKey, contractNativeMinterKey, txAllowListKey, feeManagerKey, rewardManagerKey /* {yourPrecompile}Key */}
+var precompileKeys = []precompileKey{contractDeployerAllowListKey, contractNativeMinterKey, txAllowListKey, feeManagerKey, rewardManagerKey, helloWorldKey /* {yourPrecompile}Key */}
 
 // PrecompileUpgrade is a helper struct embedded in UpgradeConfig, representing
 // each of the possible stateful precompile types that can be activated
@@ -61,6 +61,7 @@ type PrecompileUpgrade struct {
 	TxAllowListConfig               *precompile.TxAllowListConfig               `json:"txAllowListConfig,omitempty"`               // Config for the tx allow list precompile
 	FeeManagerConfig                *precompile.FeeConfigManagerConfig          `json:"feeManagerConfig,omitempty"`                // Config for the fee manager precompile
 	RewardManagerConfig             *precompile.RewardManagerConfig             `json:"rewardManagerConfig,omitempty"`             // Config for the reward manager precompile
+	HelloWorldConfig                *precompile.HelloWorldConfig                `json:"helloWorldConfig,omitempty"`                // Config for the hello world precompile
 	// ADD YOUR PRECOMPILE HERE
 	// {YourPrecompile}Config  *precompile.{YourPrecompile}Config `json:"{yourPrecompile}Config,omitempty"`
 }
@@ -77,6 +78,9 @@ func (p *PrecompileUpgrade) getByKey(key precompileKey) (precompile.StatefulPrec
 		return p.FeeManagerConfig, p.FeeManagerConfig != nil
 	case rewardManagerKey:
 		return p.RewardManagerConfig, p.RewardManagerConfig != nil
+	case helloWorldKey:
+		return p.HelloWorldConfig, p.HelloWorldConfig != nil
+
 	// ADD YOUR PRECOMPILE HERE
 	/*
 		case {yourPrecompile}Key:
@@ -88,11 +92,11 @@ func (p *PrecompileUpgrade) getByKey(key precompileKey) (precompile.StatefulPrec
 }
 
 // verifyPrecompileUpgrades checks [c.PrecompileUpgrades] is well formed:
-// - [upgrades] must specify exactly one key per PrecompileUpgrade
-// - the specified blockTimestamps must monotonically increase
-// - the specified blockTimestamps must be compatible with those
-//   specified in the chainConfig by genesis.
-// - check a precompile is disabled before it is re-enabled
+//   - [upgrades] must specify exactly one key per PrecompileUpgrade
+//   - the specified blockTimestamps must monotonically increase
+//   - the specified blockTimestamps must be compatible with those
+//     specified in the chainConfig by genesis.
+//   - check a precompile is disabled before it is re-enabled
 func (c *ChainConfig) verifyPrecompileUpgrades() error {
 	var lastBlockTimestamp *big.Int
 	for i, upgrade := range c.PrecompileUpgrades {
@@ -252,6 +256,13 @@ func (c *ChainConfig) Get{YourPrecompile}Config(blockTimestamp *big.Int) *precom
 }
 */
 
+func (c *ChainConfig) GetHelloWorldConfig(blockTimestamp *big.Int) *precompile.HelloWorldConfig {
+	if val := c.getActivePrecompileConfig(blockTimestamp, helloWorldKey, c.PrecompileUpgrades); val != nil {
+		return val.(*precompile.HelloWorldConfig)
+	}
+	return nil
+}
+
 func (c *ChainConfig) GetActivePrecompiles(blockTimestamp *big.Int) PrecompileUpgrade {
 	pu := PrecompileUpgrade{}
 	if config := c.GetContractDeployerAllowListConfig(blockTimestamp); config != nil && !config.Disable {
@@ -269,6 +280,10 @@ func (c *ChainConfig) GetActivePrecompiles(blockTimestamp *big.Int) PrecompileUp
 	if config := c.GetRewardManagerConfig(blockTimestamp); config != nil && !config.Disable {
 		pu.RewardManagerConfig = config
 	}
+	if config := c.GetHelloWorldConfig(blockTimestamp); config != nil && !config.Disable {
+		pu.HelloWorldConfig = config
+	}
+
 	// ADD YOUR PRECOMPILE HERE
 	// if config := c.{YourPrecompile}Config(blockTimestamp); config != nil && !config.Disable {
 	// 	pu.{YourPrecompile}Config = config
