@@ -35,6 +35,8 @@ var (
 	RewardManagerAddress             = common.HexToAddress("0x0200000000000000000000000000000000000004")
 	// ADD YOUR PRECOMPILE HERE
 	// {YourPrecompile}Address       = common.HexToAddress("0x03000000000000000000000000000000000000??")
+	// THIS SHOULD BE MOVED TO precompile/params.go with a suitable hex address.
+	HelloWorldAddress = common.HexToAddress("0x0300000000000000000000000000000000000000")
 
 	UsedAddresses = []common.Address{
 		ContractDeployerAllowListAddress,
@@ -43,7 +45,7 @@ var (
 		FeeConfigManagerAddress,
 		RewardManagerAddress,
 		// ADD YOUR PRECOMPILE HERE
-		// YourPrecompileAddress
+		HelloWorldAddress,
 	}
 	reservedRanges = []AddressRange{
 		{
