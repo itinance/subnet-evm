@@ -159,12 +159,12 @@ func sayHello(accessibleState PrecompileAccessibleState, caller common.Address, 
 	if remainingGas, err = deductGas(suppliedGas, SayHelloGasCost); err != nil {
 		return nil, 0, err
 	}
-	// no input provided for this function
 
-	// CUSTOM CODE STARTS HERE
-
-	var output string // CUSTOM CODE FOR AN OUTPUT
-	packedOutput, err := PackSayHelloOutput(output)
+	// Get the current state
+	currentState := accessibleState.GetStateDB()
+	// Get the value set at recipient
+	value := currentState.GetState(HelloWorldAddress, common.BytesToHash([]byte("storageKey")))
+	packedOutput, err := PackSayHelloOutput(string(common.TrimLeftZeroes(value.Bytes())))
 	if err != nil {
 		return nil, remainingGas, err
 	}
